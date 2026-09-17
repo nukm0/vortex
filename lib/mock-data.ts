@@ -1,9 +1,11 @@
-// In-memory хранилище для тестирования интерфейса без БД.
-// При перезапуске сервера данные сбрасываются — это ожидаемо.
+// In-memory хранилище. Данные сбрасываются при перезапуске сервера.
 
-export type City = {
+export type City = { id: string; name: string };
+
+export type Category = {
   id: string;
   name: string;
+  createdAt: string;
 };
 
 export type Seller = {
@@ -12,7 +14,7 @@ export type Seller = {
   phone: string | null;
   username: string | null;
   cityId: string;
-  rates: Record<string, number>;
+  rates: Record<string, number>; // categoryId -> ставка
   createdAt: string;
 };
 
@@ -21,7 +23,7 @@ export type Item = {
   name: string;
   price: number;
   quantity: number;
-  category: string;
+  categoryId: string;
   cityId: string;
   sellerId: string | null;
   adminRate: number | null;
@@ -44,6 +46,7 @@ export type Revision = {
 
 type Store = {
   cities: City[];
+  categories: Category[];
   sellers: Seller[];
   items: Item[];
   revisions: Revision[];
@@ -58,6 +61,12 @@ function seed(): Store {
     { id: "c3", name: "Казань" },
   ];
 
+  const categories: Category[] = [
+    { id: "cat1", name: "Электроника", createdAt: new Date().toISOString() },
+    { id: "cat2", name: "Одежда", createdAt: new Date().toISOString() },
+    { id: "cat3", name: "Еда", createdAt: new Date().toISOString() },
+  ];
+
   const sellers: Seller[] = [
     {
       id: "s1",
@@ -65,7 +74,7 @@ function seed(): Store {
       phone: "+79990001122",
       username: "@ivan",
       cityId: "c1",
-      rates: { electronics: 120, clothing: 80, food: 40, general: 60 },
+      rates: { cat1: 120, cat2: 80, cat3: 40 },
       createdAt: new Date().toISOString(),
     },
     {
@@ -74,7 +83,7 @@ function seed(): Store {
       phone: "+79993334455",
       username: "@anna",
       cityId: "c2",
-      rates: { electronics: 100, clothing: 70, general: 50 },
+      rates: { cat1: 100, cat2: 70, cat3: 30 },
       createdAt: new Date().toISOString(),
     },
   ];
@@ -85,7 +94,7 @@ function seed(): Store {
       name: "iPhone 15",
       price: 90000,
       quantity: 3,
-      category: "electronics",
+      categoryId: "cat1",
       cityId: "c1",
       sellerId: "s1",
       adminRate: 50,
@@ -96,7 +105,7 @@ function seed(): Store {
       name: "Футболка Nike",
       price: 3000,
       quantity: 10,
-      category: "clothing",
+      categoryId: "cat2",
       cityId: "c1",
       sellerId: "s1",
       adminRate: null,
@@ -107,7 +116,7 @@ function seed(): Store {
       name: "Кофе Lavazza",
       price: 800,
       quantity: 20,
-      category: "food",
+      categoryId: "cat3",
       cityId: "c2",
       sellerId: "s2",
       adminRate: null,
@@ -118,7 +127,7 @@ function seed(): Store {
       name: "Samsung TV",
       price: 55000,
       quantity: 5,
-      category: "electronics",
+      categoryId: "cat1",
       cityId: "c2",
       sellerId: null,
       adminRate: 100,
@@ -126,7 +135,7 @@ function seed(): Store {
     },
   ];
 
-  return { cities, sellers, items, revisions: [] };
+  return { cities, categories, sellers, items, revisions: [] };
 }
 
 export const store: Store = globalStore.__store ?? seed();
@@ -140,6 +149,10 @@ export function findCity(id: string) {
   return store.cities.find((c) => c.id === id) ?? null;
 }
 
+export function findCategory(id: string) {
+  return store.categories.find((c) => c.id === id) ?? null;
+}
+
 export function findSeller(id: string) {
   return store.sellers.find((s) => s.id === id) ?? null;
 }
@@ -148,9 +161,9 @@ export function findItem(id: string) {
   return store.items.find((i) => i.id === id) ?? null;
 }
 
-// Ставка: приоритет — adminRate, иначе ставка продавца по категории/общей
+// Ставка: приоритет — adminRate, иначе ставка продавца по категории товара
 export function effectiveRate(item: Item, seller: Seller | null): number {
   if (item.adminRate !== null) return item.adminRate;
   if (!seller) return 0;
-  return seller.rates[item.category] ?? seller.rates.general ?? 0;
+  return seller.rates[item.categoryId] ?? 0;
 }
