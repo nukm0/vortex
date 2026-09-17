@@ -1,9 +1,9 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { store, uid } from "@/lib/mock-data";
 
-const CATEGORIES = ["electronics", "clothing", "food", "general"] as const;
+const CATEGORIES = ["electronics", "clothing", "food", "general"];
 
 export async function createSeller(formData: FormData) {
   const name = (formData.get("name") as string)?.trim();
@@ -11,16 +11,22 @@ export async function createSeller(formData: FormData) {
   const username = (formData.get("username") as string)?.trim() || null;
   const cityId = formData.get("cityId") as string;
 
-  if (!name || !cityId) throw new Error("Имя и город обязательны");
+  if (!name || !cityId) return;
 
-  const ratesJson: Record<string, number> = {};
+  const rates: Record<string, number> = {};
   for (const cat of CATEGORIES) {
     const v = formData.get(`rate_${cat}`);
-    if (v && v !== "") ratesJson[cat] = Number(v);
+    if (v && v !== "") rates[cat] = Number(v);
   }
 
-  await prisma.seller.create({
-    data: { name, phone, username, cityId, ratesJson },
+  store.sellers.unshift({
+    id: uid("s"),
+    name,
+    phone,
+    username,
+    cityId,
+    rates,
+    createdAt: new Date().toISOString(),
   });
 
   revalidatePath("/admin/sellers");
@@ -29,8 +35,11 @@ export async function createSeller(formData: FormData) {
 export async function deleteSeller(formData: FormData) {
   const id = formData.get("id") as string;
   if (!id) return;
-  // Отвяжем товары, чтобы не падало по FK
-  await prisma.item.updateMany({ where: { sellerId: id }, data: { sellerId: null } });
-  await prisma.seller.delete({ where: { id } });
+
+  store.items = store.items.map((i) =>
+    i.sellerId === id ? { ...i, sellerId: null } : i
+  );
+  store.sellers = store.sellers.filter((s) => s.id !== id);
+
   revalidatePath("/admin/sellers");
 }
