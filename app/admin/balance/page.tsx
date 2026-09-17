@@ -1,4 +1,4 @@
-import { store, effectiveRate } from "@/lib/mock-data";
+import { store, findCategory, effectiveRate, findCity } from "@/lib/mock-data";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +12,7 @@ export default function BalancePage() {
       total += sum;
       return {
         name: it.name,
+        category: findCategory(it.categoryId)?.name || "—",
         rate,
         qty: it.quantity,
         sum,
@@ -25,55 +26,74 @@ export default function BalancePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Баланс</h1>
+      <h1 className="text-3xl font-bold text-purple-900">Баланс</h1>
 
-      <div className="bg-white p-6 rounded shadow">
-        <p className="text-sm text-gray-600">Итого к выплате всем продавцам</p>
-        <p className="text-3xl font-bold text-green-700">{grandTotal.toLocaleString("ru-RU")} ₽</p>
+      <div className="card-purple">
+        <p className="text-sm text-purple-700">Итого к выплате всем продавцам</p>
+        <p className="text-4xl font-bold text-green-600">
+          {grandTotal.toLocaleString("ru-RU")} ₽
+        </p>
       </div>
 
-      <div className="space-y-4">
-        {rows.map(({ seller, total, detail }) => (
-          <div key={seller.id} className="bg-white p-6 rounded shadow">
-            <div className="flex justify-between items-baseline mb-3">
-              <h2 className="font-semibold">
-                {seller.name}{" "}
-                <span className="text-gray-500 text-sm">
-                  ({store.cities.find((c) => c.id === seller.cityId)?.name})
-                </span>
-              </h2>
-              <span className="text-lg font-bold text-green-700">
-                {total.toLocaleString("ru-RU")} ₽
+      {rows.map(({ seller, total, detail }) => (
+        <div key={seller.id} className="card">
+          <div className="flex justify-between items-baseline mb-3">
+            <h2 className="font-semibold text-lg text-purple-900">
+              {seller.name}{" "}
+              <span className="text-purple-500 text-sm font-normal">
+                ({findCity(seller.cityId)?.name})
               </span>
-            </div>
-            <table className="w-full text-sm">
-              <thead className="text-gray-500 text-left">
-                <tr>
-                  <th className="py-1">Товар</th>
-                  <th className="py-1">Ставка</th>
-                  <th className="py-1">Источник</th>
-                  <th className="py-1">Кол-во</th>
-                  <th className="py-1">Сумма</th>
-                </tr>
-              </thead>
-              <tbody>
-                {detail.map((d, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="py-1">{d.name}</td>
-                    <td className="py-1">{d.rate} ₽</td>
-                    <td className="py-1 text-xs text-gray-500">{d.source}</td>
-                    <td className="py-1">{d.qty}</td>
-                    <td className="py-1">{d.sum.toLocaleString("ru-RU")} ₽</td>
-                  </tr>
-                ))}
-                {detail.length === 0 && (
-                  <tr><td colSpan={5} className="py-2 text-gray-500">Нет товаров</td></tr>
-                )}
-              </tbody>
-            </table>
+            </h2>
+            <span className="text-2xl font-bold text-green-600">
+              {total.toLocaleString("ru-RU")} ₽
+            </span>
           </div>
-        ))}
-      </div>
+
+          <table className="w-full text-sm">
+            <thead className="text-purple-500 text-left border-b border-purple-100">
+              <tr>
+                <th className="py-2">Товар</th>
+                <th className="py-2">Категория</th>
+                <th className="py-2">Ставка</th>
+                <th className="py-2">Источник</th>
+                <th className="py-2">Кол-во</th>
+                <th className="py-2">Сумма</th>
+              </tr>
+            </thead>
+            <tbody>
+              {detail.map((d, i) => (
+                <tr key={i} className="border-t border-purple-50">
+                  <td className="py-1.5 text-purple-900">{d.name}</td>
+                  <td className="py-1.5">
+                    <span className="badge">{d.category}</span>
+                  </td>
+                  <td className="py-1.5">{d.rate} ₽</td>
+                  <td className="py-1.5 text-xs">
+                    <span
+                      className={
+                        d.source === "админ" ? "text-purple-600" : "text-gray-500"
+                      }
+                    >
+                      {d.source}
+                    </span>
+                  </td>
+                  <td className="py-1.5">{d.qty}</td>
+                  <td className="py-1.5 font-medium text-green-700">
+                    {d.sum.toLocaleString("ru-RU")} ₽
+                  </td>
+                </tr>
+              ))}
+              {detail.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-3 text-center text-purple-400">
+                    Нет товаров
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      ))}
     </div>
   );
 }
