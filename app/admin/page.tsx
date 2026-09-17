@@ -1,18 +1,13 @@
-import { prisma } from "@/lib/prisma";
+import { store } from "@/lib/mock-data";
 
-export default async function AdminHome() {
-  const [sellers, items, cities, revisions] = await Promise.all([
-    prisma.seller.count(),
-    prisma.item.count(),
-    prisma.city.count(),
-    prisma.revision.count(),
-  ]);
+export const dynamic = "force-dynamic";
 
+export default function AdminHome() {
   const cards = [
-    { label: "Продавцов", value: sellers, color: "bg-blue-50 text-blue-700" },
-    { label: "Товаров", value: items, color: "bg-green-50 text-green-700" },
-    { label: "Городов", value: cities, color: "bg-purple-50 text-purple-700" },
-    { label: "Ревизий", value: revisions, color: "bg-orange-50 text-orange-700" },
+    { label: "Продавцов", value: store.sellers.length, color: "bg-blue-50 text-blue-700" },
+    { label: "Товаров", value: store.items.length, color: "bg-green-50 text-green-700" },
+    { label: "Городов", value: store.cities.length, color: "bg-purple-50 text-purple-700" },
+    { label: "Ревизий", value: store.revisions.length, color: "bg-orange-50 text-orange-700" },
   ];
 
   return (
@@ -25,6 +20,9 @@ export default async function AdminHome() {
             <p className="text-3xl font-bold">{c.value}</p>
           </div>
         ))}
+      </div>
+      <div className="mt-8 bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded">
+        ⚠️ Тестовый режим: данные хранятся в памяти и сбрасываются при перезапуске сервера.
       </div>
     </div>
   );
