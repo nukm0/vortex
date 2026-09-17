@@ -238,4 +238,40 @@ export default async function ItemsPage() {
                       form={`upd-${it.id}`}
                       name="adminRate"
                       type="number"
-                      step="0.01
+                      step="0.01"
+                      defaultValue={it.adminRate ? Number(it.adminRate) : ""}
+                      placeholder="ставка продавца"
+                      className="border p-1 rounded w-28"
+                    />
+                  </td>
+                  <td className="p-2 flex gap-2">
+                    <button
+                      form={`upd-${it.id}`}
+                      type="submit"
+                      className="text-blue-600 hover:underline"
+                    >
+                      Сохранить
+                    </button>
+                    <form action={deleteItem}>
+                      <input type="hidden" name="id" value={it.id} />
+                      <button className="text-red-600 hover:underline">
+                        Удалить
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+              {items.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="p-6 text-center text-gray-500">
+                    Товаров пока нет
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
