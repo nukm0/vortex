@@ -1,20 +1,20 @@
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
 import Sidebar from "@/components/Sidebar";
+import { isAuthenticated } from "@/lib/auth";
 
-export default async function AdminLayout({
+export const dynamic = "force-dynamic";
+
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
+  if (!isAuthenticated()) redirect("/login");
 
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 p-6 overflow-auto">{children}</main>
+      <main className="flex-1 p-6 overflow-auto bg-gray-50">{children}</main>
     </div>
   );
 }
