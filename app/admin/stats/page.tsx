@@ -1,28 +1,30 @@
-import { prisma } from "@/lib/prisma";
+import { store } from "@/lib/mock-data";
 
-export default async function StatsPage() {
-  const [cities, sellers, items] = await Promise.all([
-    prisma.city.findMany(),
-    prisma.seller.findMany({ include: { city: true, items: true } }),
-    prisma.item.findMany({ include: { city: true } }),
-  ]);
+export const dynamic = "force-dynamic";
 
-  // По городам
+export default function StatsPage() {
+  const cities = store.cities;
+  const sellers = store.sellers;
+  const items = store.items;
+
   const byCity = cities.map((c) => {
     const cityItems = items.filter((i) => i.cityId === c.id);
     const qty = cityItems.reduce((s, i) => s + i.quantity, 0);
-    const value = cityItems.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
+    const value = cityItems.reduce((s, i) => s + i.price * i.quantity, 0);
     return { city: c.name, qty, value, count: cityItems.length };
   });
 
-  // По продавцам
   const bySeller = sellers.map((s) => {
-    const qty = s.items.reduce((sum, i) => sum + i.quantity, 0);
-    const value = s.items.reduce(
-      (sum, i) => sum + Number(i.price) * i.quantity,
-      0
-    );
-    return { name: s.name, city: s.city.name, qty, value, positions: s.items.length };
+    const sItems = items.filter((i) => i.sellerId === s.id);
+    const qty = sItems.reduce((sum, i) => sum + i.quantity, 0);
+    const value = sItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    return {
+      name: s.name,
+      city: cities.find((c) => c.id === s.cityId)?.name || "—",
+      qty,
+      value,
+      positions: sItems.length,
+    };
   });
 
   return (
