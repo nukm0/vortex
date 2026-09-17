@@ -3,5 +3,73 @@
 @tailwind utilities;
 
 body {
-  @apply bg-gray-50 text-gray-900;
+  min-height: 100vh;
+  color: #1f2937;
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 35%, #ddd6fe 70%, #c4b5fd 100%);
+  background-attachment: fixed;
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl shadow-lg border-2 border-purple-200 p-6;
+  }
+
+  .card-purple {
+    @apply bg-white rounded-2xl shadow-xl border-2 border-purple-300 p-6
+           bg-gradient-to-br from-white to-purple-50;
+  }
+
+  .input {
+    @apply w-full bg-white border-2 border-purple-200 rounded-lg px-3 py-2
+           outline-none transition
+           focus:border-purple-500 focus:ring-2 focus:ring-purple-200;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-purple-900 mb-1;
+  }
+
+  .btn {
+    @apply font-medium py-2 px-4 rounded-lg transition shadow-sm
+           border-2 inline-flex items-center justify-center gap-2;
+  }
+
+  .btn-primary {
+    @apply btn bg-green-500 hover:bg-green-600 text-white border-green-600;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-500 hover:bg-red-600 text-white border-red-600;
+  }
+
+  .btn-purple {
+    @apply btn bg-white text-purple-700 border-purple-400
+           hover:bg-purple-50 hover:border-purple-500;
+  }
+
+  .btn-sm {
+    @apply py-1 px-3 text-sm;
+  }
+
+  .link-danger {
+    @apply text-red-600 hover:text-red-700 hover:underline font-medium;
+  }
+
+  .link-primary {
+    @apply text-green-600 hover:text-green-700 hover:underline font-medium;
+  }
+
+  .table-head {
+    @apply bg-gradient-to-r from-purple-100 to-purple-50 text-purple-900
+           text-left border-b-2 border-purple-200;
+  }
+
+  .badge {
+    @apply inline-block px-2 py-0.5 rounded-full text-xs font-medium
+           bg-purple-100 text-purple-800 border border-purple-200;
+  }
+
+  .section-title {
+    @apply text-xl font-bold text-purple-900 mb-4 flex items-center gap-2;
+  }
 }
