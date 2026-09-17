@@ -1,45 +1,11 @@
-import { AuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import { prisma } from "./prisma";
+import { cookies } from "next/headers";
 
-export const authOptions: AuthOptions = {
-  session: { strategy: "jwt" },
-  providers: [
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        login: { label: "Логин", type: "text" },
-        password: { label: "Пароль", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.login || !credentials?.password) return null;
+export const AUTH_COOKIE = "admin_session";
+export const AUTH_VALUE = "owner-ok";
 
-        const user = await prisma.user.findUnique({
-          where: { login: credentials.login },
-        });
-        if (!user) return null;
+export const DEFAULT_LOGIN = "owner";
+export const DEFAULT_PASSWORD = "owner";
 
-        const ok = await bcrypt.compare(credentials.password, user.password);
-        if (!ok) return null;
-
-        return { id: user.id, name: user.login, role: user.role } as any;
-      },
-    }),
-  ],
-  pages: { signIn: "/login" },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) (token as any).role = (user as any).role;
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        (session.user as any).id = token.sub;
-        (session.user as any).role = (token as any).role;
-      }
-      return session;
-    },
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-};
+export function isAuthenticated(): boolean {
+  return cookies().get(AUTH_COOKIE)?.value === AUTH_VALUE;
+}
