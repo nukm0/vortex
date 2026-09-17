@@ -11,16 +11,18 @@ export async function createRevision(formData: FormData) {
   const sItems = store.items.filter((i) => i.sellerId === sellerId);
   if (sItems.length === 0) return;
 
+  const revisionItems = sItems.map((it) => {
+    const raw = formData.get(`actual_${it.id}`);
+    const actual = raw !== null && raw !== "" ? Number(raw) : it.quantity;
+    return { itemId: it.id, expected: it.quantity, actual };
+  });
+
   store.revisions.unshift({
     id: uid("r"),
     sellerId,
     note,
     createdAt: new Date().toISOString(),
-    items: sItems.map((it) => ({
-      itemId: it.id,
-      expected: it.quantity,
-      actual: it.quantity,
-    })),
+    items: revisionItems,
   });
 
   revalidatePath("/admin/revisions");
@@ -39,4 +41,5 @@ export async function applyRevision(formData: FormData) {
   revalidatePath("/admin/revisions");
   revalidatePath("/admin/items");
   revalidatePath("/admin/balance");
+  revalidatePath("/admin/stats");
 }
